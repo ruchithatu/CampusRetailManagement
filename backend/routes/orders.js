@@ -4,6 +4,7 @@ const Order = require('../models/Order')
 const Payment = require('../models/Payment')
 const Product = require('../models/Product')
 const User = require('../models/User')
+const Notification = require('../models/Notification')
 
 // Check availability for rent
 router.post('/check-availability', async (req, res) => {
@@ -92,6 +93,19 @@ router.post('/create', async (req, res) => {
       })
     }
 
+    // Create notification for seller
+    const seller = await User.findById(sellerId)
+    if (seller) {
+      const notificationMessage = `New ${orderType} order received for ${productName} - Order #${savedOrder.orderId}`
+      
+      await Notification.create({
+        userId: sellerId,
+        type: 'order_placed',
+        orderId: savedOrder._id,
+        message: notificationMessage
+      })
+    }
+
     res.json({
       success: true,
       message: 'Order created successfully',
@@ -171,6 +185,16 @@ router.put('/approve/:orderId', async (req, res) => {
         message: 'Order not found'
       })
     }
+
+    // Create notification for buyer
+    const notificationMessage = `Your order #${order.orderId} for ${order.productName} has been approved by the seller`
+    
+    await Notification.create({
+      userId: order.customerId._id,
+      type: 'order_approved',
+      orderId: order._id,
+      message: notificationMessage
+    })
 
     res.json({
       success: true,

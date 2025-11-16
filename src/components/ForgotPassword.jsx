@@ -3,6 +3,8 @@ import './ForgotPassword.css'
 
 function ForgotPassword({ onBackToLogin }) {
   const [email, setEmail] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -12,8 +14,9 @@ function ForgotPassword({ onBackToLogin }) {
     setMessage('')
     setError('')
 
-    if (!email) {
-      setError('Please enter your email address')
+    // Validation
+    if (!email || !newPassword || !confirmPassword) {
+      setError('Please fill in all fields')
       return
     }
 
@@ -22,28 +25,46 @@ function ForgotPassword({ onBackToLogin }) {
       return
     }
 
+    if (newPassword.length < 10) {
+      setError('Password must be at least 10 characters long')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      const response = await fetch('http://localhost:5000/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ 
+          email,
+          newPassword 
+        })
       })
 
       const data = await response.json()
 
       if (data.success) {
-        setMessage('Password reset link has been sent to your email. Please check your inbox.')
+        setMessage('Password updated successfully! Redirecting to login...')
         setEmail('')
+        setNewPassword('')
+        setConfirmPassword('')
+        setTimeout(() => {
+          onBackToLogin()
+        }, 2000)
       } else {
         setError(data.message)
       }
     } catch (err) {
-      console.error('Forgot password error:', err)
-      setError('Failed to send reset email. Please try again.')
+      console.error('Reset password error:', err)
+      setError('Failed to reset password. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -52,8 +73,8 @@ function ForgotPassword({ onBackToLogin }) {
   return (
     <div className="forgot-password-container">
       <div className="forgot-password-card">
-        <h2>Forgot Password?</h2>
-        <p className="subtitle">Enter your email address and we'll send you a link to reset your password</p>
+        <h2>Reset Password</h2>
+        <p className="subtitle">Enter your email and new password to reset</p>
         
         <form onSubmit={handleSubmit} className="forgot-password-form">
           <div className="form-group">
@@ -63,7 +84,31 @@ function ForgotPassword({ onBackToLogin }) {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Enter your registered email"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="newPassword">New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password (min 6 characters)"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter new password"
               disabled={loading}
             />
           </div>
@@ -72,7 +117,7 @@ function ForgotPassword({ onBackToLogin }) {
           {message && <div className="success-message">{message}</div>}
           
           <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Sending...' : 'Send Reset Link'}
+            {loading ? 'Resetting...' : 'Reset Password'}
           </button>
           
           <button type="button" className="back-btn" onClick={onBackToLogin}>

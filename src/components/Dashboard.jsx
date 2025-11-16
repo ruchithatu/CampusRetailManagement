@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './Dashboard.css'
 import RentModal from './RentModal'
 import BuyModal from './BuyModal'
+import Notifications from './Notifications'
 
 function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
   const [user, setUser] = useState(null)
@@ -85,6 +86,8 @@ function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
           <button className="your-product-btn" onClick={onNavigateToProducts}>
             Your Product
           </button>
+          
+          <Notifications user={user} />
           
           <div className="profile-section">
             <button 

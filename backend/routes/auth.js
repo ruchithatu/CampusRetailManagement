@@ -207,47 +207,38 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // @route   POST /api/auth/reset-password
-// @desc    Reset user password
+// @desc    Reset user password with email verification
 // @access  Public
 router.post('/reset-password', async (req, res) => {
   try {
-    const { token, password } = req.body;
+    const { email, newPassword } = req.body;
 
-    if (!token || !password) {
+    if (!email || !newPassword) {
       return res.status(400).json({ 
         success: false,
-        message: 'Please provide token and new password' 
+        message: 'Please provide email and new password' 
       });
     }
 
-    if (password.length < 6) {
+    if (newPassword.length < 6) {
       return res.status(400).json({ 
         success: false,
         message: 'Password must be at least 6 characters' 
       });
     }
 
-    // Hash the token from URL
-    const resetPasswordToken = crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
-
-    // Find user by token and check if token is not expired
-    const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() }
-    });
+    // Find user by email
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ 
+      return res.status(404).json({ 
         success: false,
-        message: 'Invalid or expired reset token' 
+        message: 'No account found with this email address' 
       });
     }
 
     // Set new password (will be hashed by pre-save middleware)
-    user.password = password;
+    user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     

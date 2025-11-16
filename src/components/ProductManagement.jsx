@@ -4,6 +4,7 @@ import ManageProduct from './ManageProduct'
 import ManageOrders from './ManageOrders'
 import ViewUser from './ViewUser'
 import History from './History'
+import Notifications from './Notifications'
 import './ProductManagement.css'
 
 function ProductManagement({ currentUser, onBack }) {
@@ -58,6 +59,9 @@ function ProductManagement({ currentUser, onBack }) {
 
       {/* Main Content Area */}
       <main className="content-area">
+        <div className="content-header">
+          <Notifications user={currentUser} />
+        </div>
         {renderContent()}
       </main>
     </div>
