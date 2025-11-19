@@ -3,10 +3,14 @@ import './Dashboard.css'
 import RentModal from './RentModal'
 import BuyModal from './BuyModal'
 import Notifications from './Notifications'
+import EditProfile from './EditProfile'
+import MyOrders from './MyOrders'
 
 function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
   const [user, setUser] = useState(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [showEditProfile, setShowEditProfile] = useState(false)
+  const [showMyOrders, setShowMyOrders] = useState(false)
   const [allProducts, setAllProducts] = useState([])
   const [filter, setFilter] = useState('All') // 'All', 'Electronic', 'Non-Electronic'
   const [selectedProduct, setSelectedProduct] = useState(null) // For detail modal
@@ -40,6 +44,20 @@ function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     onLogout()
+  }
+
+  const handleEditProfile = () => {
+    setShowProfileMenu(false)
+    setShowEditProfile(true)
+  }
+
+  const handleMyOrders = () => {
+    setShowProfileMenu(false)
+    setShowMyOrders(true)
+  }
+
+  const handleUpdateSuccess = (updatedUser) => {
+    setUser(updatedUser)
   }
 
   const openProductDetail = (product) => {
@@ -79,7 +97,7 @@ function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
       {/* Top Navigation Bar */}
       <nav className="dashboard-nav">
         <div className="nav-left">
-          <h2 className="dashboard-title">Dashboard</h2>
+          <h2 className="dashboard-title">Hello {user.firstName} {user.lastName}</h2>
         </div>
         
         <div className="nav-right">
@@ -106,12 +124,12 @@ function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
                   <p className="profile-email">{user.email}</p>
                 </div>
                 <hr />
-                <div className="profile-details">
-                  <p><strong>Program:</strong> {user.program}</p>
-                  <p><strong>Course:</strong> {user.course}</p>
-                  <p><strong>Phone:</strong> {user.phoneNumber}</p>
-                </div>
-                <hr />
+                <button className="edit-profile-btn" onClick={handleEditProfile}>
+                  Edit Profile
+                </button>
+                <button className="my-orders-btn" onClick={handleMyOrders}>
+                  My Orders
+                </button>
                 <button className="logout-btn" onClick={handleLogout}>
                   Logout
                 </button>
@@ -125,10 +143,6 @@ function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
       <main className="dashboard-main">
         <div className="welcome-section">
           <div className="welcome-header">
-            <div>
-              <h1>Welcome back, {user.firstName}! 👋</h1>
-              <p className="welcome-subtitle">Browse all available products</p>
-            </div>
             <div className="filter-buttons">
               <button 
                 className={filter === 'All' ? 'filter-btn active' : 'filter-btn'}
@@ -329,6 +343,25 @@ function Dashboard({ currentUser, onLogout, onNavigateToProducts }) {
           user={user}
           onClose={closeBuyModal}
         />
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <EditProfile
+          user={user}
+          onClose={() => setShowEditProfile(false)}
+          onUpdateSuccess={handleUpdateSuccess}
+        />
+      )}
+
+      {/* My Orders Modal/Page */}
+      {showMyOrders && (
+        <div className="modal-overlay" onClick={() => setShowMyOrders(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setShowMyOrders(false)}>&times;</button>
+            <MyOrders currentUser={user} />
+          </div>
+        </div>
       )}
     </div>
   )

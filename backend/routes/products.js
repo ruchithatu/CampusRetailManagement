@@ -105,7 +105,7 @@ router.get('/list/:userId', async (req, res) => {
 // Get all products from all users (for marketplace/dashboard)
 router.get('/all', async (req, res) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find({ isAvailable: true })
       .populate('userId', 'firstName lastName email')
       .sort({ createdAt: -1 })
     res.json({

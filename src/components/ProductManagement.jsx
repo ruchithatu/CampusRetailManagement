@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import AddProduct from './AddProduct'
 import ManageProduct from './ManageProduct'
 import ManageOrders from './ManageOrders'
-import ViewUser from './ViewUser'
 import History from './History'
 import Notifications from './Notifications'
 import './ProductManagement.css'
@@ -14,7 +13,6 @@ function ProductManagement({ currentUser, onBack }) {
     { id: 'addproduct', label: 'Add Product', icon: '📦' },
     { id: 'manageproduct', label: 'Manage Product', icon: '🛠️' },
     { id: 'manageorders', label: 'Manage Orders', icon: '📋' },
-    { id: 'viewuser', label: 'View User', icon: '👥' },
     { id: 'history', label: 'History', icon: '📜' }
   ]
 
@@ -26,8 +24,6 @@ function ProductManagement({ currentUser, onBack }) {
         return <ManageProduct currentUser={currentUser} />
       case 'manageorders':
         return <ManageOrders currentUser={currentUser} />
-      case 'viewuser':
-        return <ViewUser />
       case 'history':
         return <History currentUser={currentUser} />
       default:

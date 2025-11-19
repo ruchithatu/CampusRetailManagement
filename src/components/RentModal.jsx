@@ -62,8 +62,15 @@ function RentModal({ product, user, onClose }) {
       return
     }
 
+    if (!formData.pickupDetails || !formData.pickupDetails.trim()) {
+      alert('Please specify where to pick up')
+      return
+    }
+
     setSubmitting(true)
     try {
+      const finalPickupLocation = `${formData.pickupLocation}: ${formData.pickupDetails}`
+      
       const response = await fetch('http://localhost:5000/api/orders/create', {
         method: 'POST',
         headers: {
@@ -77,7 +84,7 @@ function RentModal({ product, user, onClose }) {
           orderType: 'rent',
           rentFrom: formData.rentFrom,
           rentTo: formData.rentTo,
-          pickupLocation: formData.pickupLocation,
+          pickupLocation: finalPickupLocation,
           paymentMethod: 'N/A',
           totalAmount: 0
         })
@@ -105,6 +112,63 @@ function RentModal({ product, user, onClose }) {
         
         <h2>Rent: {product.name}</h2>
         
+        {/* Check if product availability dates exist and if current date is within range */}
+        {(() => {
+          if (!product.availabilityFrom || !product.availabilityTo) {
+            return (
+              <div className="not-available-message">
+                <p style={{ color: 'red', padding: '20px', textAlign: 'center', fontWeight: 'bold' }}>
+                  This product is currently not available for rent. Availability dates not set.
+                </p>
+                <button type="button" className="cancel-btn" onClick={onClose} style={{ margin: '0 auto', display: 'block' }}>
+                  Close
+                </button>
+              </div>
+            )
+          }
+          
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          const availFrom = new Date(product.availabilityFrom)
+          availFrom.setHours(0, 0, 0, 0)
+          const availTo = new Date(product.availabilityTo)
+          availTo.setHours(0, 0, 0, 0)
+          
+          const isCurrentlyAvailable = today >= availFrom && today <= availTo
+          
+          if (!isCurrentlyAvailable) {
+            return (
+              <div className="not-available-message">
+                <div className="product-availability-info" style={{ marginBottom: '20px' }}>
+                  <p><strong>Product Available:</strong> {availFrom.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })} to {availTo.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                </div>
+                <p style={{ color: 'red', padding: '20px', textAlign: 'center', fontWeight: 'bold' }}>
+                  This product is not available for rent at this time. Please check during the availability period.
+                </p>
+                <button type="button" className="cancel-btn" onClick={onClose} style={{ margin: '0 auto', display: 'block' }}>
+                  Close
+                </button>
+              </div>
+            )
+          }
+          
+          return null
+        })()}
+        
+        {/* Show availability info and form if product is currently available */}
+        {product.availabilityFrom && product.availabilityTo && (() => {
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          const availFrom = new Date(product.availabilityFrom)
+          availFrom.setHours(0, 0, 0, 0)
+          const availTo = new Date(product.availabilityTo)
+          availTo.setHours(0, 0, 0, 0)
+          return today >= availFrom && today <= availTo
+        })() && (
+          <>
+            <div className="product-availability-info">
+              <p><strong>Product Available:</strong> {new Date(product.availabilityFrom).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })} to {new Date(product.availabilityTo).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+            </div>
         <form onSubmit={handleSubmit} className="order-form">
           <div className="form-section">
             <h3>Rental Period</h3>
@@ -164,6 +228,18 @@ function RentModal({ product, user, onClose }) {
                   <option value="Inside College">Inside College</option>
                   <option value="Classroom">Classroom</option>
                 </select>
+                
+                <div className="form-group" style={{ marginTop: '15px' }}>
+                  <label>Where to Pick Up *</label>
+                  <input
+                    type="text"
+                    name="pickupDetails"
+                    placeholder="Enter specific location (e.g., Main Gate, Room 101)"
+                    value={formData.pickupDetails || ''}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-actions">
@@ -177,6 +253,8 @@ function RentModal({ product, user, onClose }) {
             </>
           )}
         </form>
+          </>
+        )}
       </div>
     </div>
   )

@@ -14,6 +14,7 @@ function Signup({ onSwitchToLogin }) {
   })
   
   const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -83,6 +84,7 @@ function Signup({ onSwitchToLogin }) {
     const newErrors = validateForm()
     
     if (Object.keys(newErrors).length === 0) {
+      setLoading(true)
       try {
         const response = await fetch('http://localhost:5000/api/auth/register', {
           method: 'POST',
@@ -95,16 +97,16 @@ function Signup({ onSwitchToLogin }) {
         const data = await response.json()
 
         if (data.success) {
-          alert(`Registration successful!\nName: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}\n\nRedirecting to login...`)
-          
-          // After successful registration, navigate to login page
+          // Show success message and redirect
           setTimeout(() => {
             onSwitchToLogin()
-          }, 500)
+          }, 2000)
         } else {
+          setLoading(false)
           alert(`Registration failed: ${data.message}`)
         }
       } catch (error) {
+        setLoading(false)
         console.error('Registration error:', error)
         alert('Failed to connect to server. Please make sure the backend is running.')
       }
@@ -238,8 +240,8 @@ function Signup({ onSwitchToLogin }) {
             {errors.phoneNumber && <span className="error-message">{errors.phoneNumber}</span>}
           </div>
           
-          <button type="submit" className="signup-button">
-            Sign Up
+          <button type="submit" className="signup-button" disabled={loading}>
+            {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
           
           <p className="login-link">
@@ -247,6 +249,18 @@ function Signup({ onSwitchToLogin }) {
           </p>
         </form>
       </div>
+      
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-dialog">
+            <div className="loading-spinner"></div>
+            <h3>Registration successful!</h3>
+            <p>Name: {formData.firstName} {formData.lastName}</p>
+            <p>Email: {formData.email}</p>
+            <p className="redirect-text">Redirecting to login...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

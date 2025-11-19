@@ -85,7 +85,14 @@ router.post('/create', async (req, res) => {
 
     await newPayment.save()
 
-    // If product availability needs to be updated
+    // If product is bought (non-electronic), mark it as unavailable
+    if (orderType === 'buy') {
+      await Product.findByIdAndUpdate(productId, {
+        isAvailable: false
+      })
+    }
+
+    // If product availability needs to be updated for rent
     if (orderType === 'rent') {
       await Product.findByIdAndUpdate(productId, {
         availabilityFrom: rentFrom,
@@ -239,6 +246,56 @@ router.put('/given/:orderId', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error updating order',
+      error: error.message
+    })
+  }
+})
+
+// Return order (customer returns the product)
+router.put('/return/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status: 'returned' },
+      { new: true }
+    ).populate('productId').populate('customerId', 'firstName lastName')
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      })
+    }
+
+    // If it's a purchased product, mark it as available again
+    if (order.orderType === 'buy' && order.productId) {
+      await Product.findByIdAndUpdate(order.productId._id, {
+        isAvailable: true
+      })
+    }
+
+    // Create notification for seller about the return
+    const notificationMessage = `${order.customerId.firstName} ${order.customerId.lastName} has returned ${order.productName} - Order #${order.orderId}`
+    
+    await Notification.create({
+      userId: order.sellerId,
+      type: 'order_returned',
+      orderId: order._id,
+      message: notificationMessage
+    })
+
+    res.json({
+      success: true,
+      message: 'Product returned successfully',
+      order
+    })
+  } catch (error) {
+    console.error('Error returning product:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error returning product',
       error: error.message
     })
   }

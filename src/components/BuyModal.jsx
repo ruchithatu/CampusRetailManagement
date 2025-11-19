@@ -153,31 +153,16 @@ function BuyModal({ product, user, onClose }) {
               <option value="Other">Other</option>
             </select>
             
-            {pickupLocation === 'Classroom' && (
-              <div className="form-group">
-                <label>Classroom Number *</label>
-                <input
-                  type="text"
-                  placeholder="Enter classroom number (e.g., 101, 2A)"
-                  value={pickupDetails}
-                  onChange={(e) => setPickupDetails(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-            
-            {pickupLocation === 'Other' && (
-              <div className="form-group">
-                <label>Pickup Location Details *</label>
-                <input
-                  type="text"
-                  placeholder="Specify pickup location"
-                  value={pickupDetails}
-                  onChange={(e) => setPickupDetails(e.target.value)}
-                  required
-                />
-              </div>
-            )}
+            <div className="form-group" style={{ marginTop: '15px' }}>
+              <label>Where to Pick Up *</label>
+              <input
+                type="text"
+                placeholder={pickupLocation === 'Classroom' ? 'Enter classroom number (e.g., 101, 2A)' : 'Enter specific location (e.g., Main Gate, Library)'}
+                value={pickupDetails}
+                onChange={(e) => setPickupDetails(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="total-section">

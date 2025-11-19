@@ -25,10 +25,12 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const notificationRoutes = require('./routes/notifications');
+const complaintRoutes = require('./routes/complaints');
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // Test route
 app.get('/', (req, res) => {

@@ -95,6 +95,12 @@ function Notifications({ user }) {
         return '✅'
       case 'order_given':
         return '📦'
+      case 'order_returned':
+        return '🔄'
+      case 'complaint_raised':
+        return '🎫'
+      case 'complaint_resolved':
+        return '✔️'
       default:
         return '🔔'
     }

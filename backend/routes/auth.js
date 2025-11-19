@@ -94,7 +94,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid email or password' 
+        message: 'User not registered' 
       });
     }
 
@@ -103,7 +103,7 @@ router.post('/login', async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid email or password' 
+        message: 'Password is wrong' 
       });
     }
 
@@ -254,6 +254,88 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: 'Server error during password reset' 
+    });
+  }
+});
+
+// @route   PUT /api/auth/update-profile/:userId
+// @desc    Update user profile
+// @access  Private
+router.put('/update-profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { firstName, lastName, email, program, course, phoneNumber, currentPassword, newPassword } = req.body;
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // If changing password, verify current password first
+    if (currentPassword && newPassword) {
+      const isPasswordValid = await user.comparePassword(currentPassword);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
+      }
+      
+      // Validate new password
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password must be at least 6 characters'
+        });
+      }
+      
+      user.password = newPassword;
+    }
+
+    // Update other fields
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (email) {
+      // Check if email is already taken by another user
+      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already in use by another account'
+        });
+      }
+      user.email = email;
+    }
+    if (program) user.program = program;
+    if (course) user.course = course;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        program: user.program,
+        course: user.course,
+        phoneNumber: user.phoneNumber
+      }
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during profile update'
     });
   }
 });

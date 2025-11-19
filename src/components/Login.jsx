@@ -6,6 +6,8 @@ function Login({ onSwitchToSignup, onLoginSuccess, onForgotPassword }) {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [userData, setUserData] = useState(null)
 
   const validateForm = () => {
     const newErrors = {}
@@ -50,14 +52,26 @@ function Login({ onSwitchToSignup, onLoginSuccess, onForgotPassword }) {
           console.log('Login successful. User stored:', data.user)
           console.log('localStorage user:', localStorage.getItem('user'))
           
-          alert(`Login successful!\nWelcome ${data.user.firstName} ${data.user.lastName}!`)
+          // Show loading overlay
+          setLoading(true)
+          setUserData(data.user)
           
           // Redirect to dashboard
           setTimeout(() => {
             onLoginSuccess(data.user)
-          }, 500)
+          }, 2000)
         } else {
-          alert(`Login failed: ${data.message}`)
+          // Check if error is due to user not registered
+          if (data.message && data.message.toLowerCase().includes('not registered')) {
+            const registerConfirm = window.confirm(`Login failed: ${data.message}\n\nUser not registered. Would you like to register now?`)
+            if (registerConfirm) {
+              onSwitchToSignup()
+            }
+          } else if (data.message && data.message.toLowerCase().includes('password is wrong')) {
+            alert(`Login failed: ${data.message}`)
+          } else {
+            alert(`Login failed: ${data.message}`)
+          }
         }
       } catch (error) {
         console.error('Login error:', error)
@@ -125,8 +139,8 @@ function Login({ onSwitchToSignup, onLoginSuccess, onForgotPassword }) {
             <a href="#" className="forgot-password" onClick={(e) => { e.preventDefault(); onForgotPassword(); }}>Forgot Password?</a>
           </div>
           
-          <button type="submit" className="login-button">
-            Login
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
           
           <p className="signup-link">
@@ -134,6 +148,17 @@ function Login({ onSwitchToSignup, onLoginSuccess, onForgotPassword }) {
           </p>
         </form>
       </div>
+      
+      {loading && userData && (
+        <div className="loading-overlay">
+          <div className="loading-dialog">
+            <div className="success-icon">✓</div>
+            <h3>Login successful!</h3>
+            <p className="welcome-text">Welcome {userData.firstName} {userData.lastName}!</p>
+            <p className="redirect-text">Redirecting to dashboard...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

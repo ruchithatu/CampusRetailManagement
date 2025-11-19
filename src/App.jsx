@@ -4,7 +4,6 @@ import Login from './components/Login'
 import Signup from './components/Signup'
 import Dashboard from './components/Dashboard'
 import ProductManagement from './components/ProductManagement'
-import ViewData from './components/ViewData'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
 import './App.css'
@@ -76,28 +75,6 @@ function App() {
           currentUser={currentUser}
           onBack={() => setCurrentPage('dashboard')} 
         />
-      )}
-      {currentPage === 'viewdata' && (
-        <ViewData />
-      )}
-      
-      {/* Admin button to view data */}
-      {currentPage !== 'viewdata' && currentPage !== 'dashboard' && currentPage !== 'products' && (
-        <button 
-          className="admin-view-btn"
-          onClick={() => setCurrentPage('viewdata')}
-        >
-          View All Users
-        </button>
-      )}
-      
-      {currentPage === 'viewdata' && (
-        <button 
-          className="admin-view-btn back-btn"
-          onClick={() => setCurrentPage('home')}
-        >
-          ← Back to Home
-        </button>
       )}
     </div>
   )
